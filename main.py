@@ -299,13 +299,13 @@ def main(page: ft.Page):
         animation_duration=250,
         expand=True,
         tabs=[
-            ft.Tab(text="Calculator", icon=ft.Icons.CALCULATE,
+            ft.Tab("Calculator", icon=ft.Icons.CALCULATE,
                    content=ft.Container(calc_tab.build(), padding=10)),
-            ft.Tab(text="Photo",      icon=ft.Icons.PHOTO,
+            ft.Tab("Photo",      icon=ft.Icons.PHOTO,
                    content=ft.Container(photo_tab.build(), padding=10)),
-            ft.Tab(text="Audio",      icon=ft.Icons.AUDIOTRACK,
+            ft.Tab("Audio",      icon=ft.Icons.AUDIOTRACK,
                    content=ft.Container(audio_tab.build(), padding=10)),
-            ft.Tab(text="PDF",        icon=ft.Icons.PICTURE_AS_PDF,
+            ft.Tab("PDF",        icon=ft.Icons.PICTURE_AS_PDF,
                    content=ft.Container(pdf_tab.build(), padding=10)),
         ],
     ))
