@@ -19,7 +19,7 @@ def read_file(file):
 # ── AUDIO TAB ─────────────────────────────────────────────────────────────────
 class AudioTab(ft.Column):
     def __init__(self, page):
-        super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
+        super().__init__(expand=True, scroll="auto")
         self._pg = page
         self.tracks = []
         self.status = ft.Text("Audio Studio: Ready", color=ft.Colors.BLUE_200)
@@ -27,7 +27,7 @@ class AudioTab(ft.Column):
 
     def build(self):
         return ft.Column([
-            ft.Text("Audio Editor", size=25, weight=ft.FontWeight.BOLD),
+            ft.Text("Audio Editor", size=25, weight="bold"),
             ft.Row([
                 ft.ElevatedButton("Add Track", icon=ft.Icons.ADD,
                                   on_click=lambda _: self.picker.pick_files(allow_multiple=True)),
@@ -60,14 +60,14 @@ class AudioTab(ft.Column):
 # ── PHOTO TAB ─────────────────────────────────────────────────────────────────
 class PhotoTab(ft.Column):
     def __init__(self, page):
-        super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
+        super().__init__(expand=True, scroll="auto")
         self._pg = page
         self.curr_img = None
-        self.img_display = ft.Image(width=300, height=300, fit=ft.ImageFit.CONTAIN)
+        self.img_display = ft.Image(width=300, height=300, fit="contain")
 
     def build(self):
         return ft.Column([
-            ft.Text("Lumina Photo Editor", size=25, weight=ft.FontWeight.BOLD),
+            ft.Text("Lumina Photo Editor", size=25, weight="bold"),
             ft.Container(self.img_display, bgcolor=ft.Colors.BLACK38, border_radius=10),
             ft.Row([
                 ft.IconButton(ft.Icons.BRIGHTNESS_6, tooltip="Brighten",
@@ -78,11 +78,11 @@ class PhotoTab(ft.Column):
                               on_click=lambda _: self.apply("contrast")),
                 ft.IconButton(ft.Icons.ROTATE_RIGHT, tooltip="Rotate",
                               on_click=lambda _: self.apply("rotate")),
-            ], alignment=ft.MainAxisAlignment.CENTER),
+            ], alignment="center"),
             ft.ElevatedButton("Open Photo", icon=ft.Icons.IMAGE,
                               on_click=lambda _: self.picker.pick_files(
                                   allowed_extensions=["jpg", "jpeg", "png", "bmp", "gif"])),
-        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        ], horizontal_alignment="center")
 
     def apply(self, mode):
         if not self.curr_img:
@@ -109,14 +109,14 @@ class PhotoTab(ft.Column):
 # ── PDF TAB ───────────────────────────────────────────────────────────────────
 class PdfTab(ft.Column):
     def __init__(self, page):
-        super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
+        super().__init__(expand=True, scroll="auto")
         self._pg = page
         self.paths = []
         self.file_list = ft.ListView(spacing=4, height=120)
 
     def build(self):
         return ft.Column([
-            ft.Text("PDF Merger", size=25, weight=ft.FontWeight.BOLD),
+            ft.Text("PDF Merger", size=25, weight="bold"),
             ft.ElevatedButton("Select PDFs", icon=ft.Icons.FILE_COPY,
                               on_click=lambda _: self.picker.pick_files(
                                   allow_multiple=True, allowed_extensions=["pdf"])),
@@ -142,14 +142,14 @@ class PdfTab(ft.Column):
 # ── CALCULATOR TAB ────────────────────────────────────────────────────────────
 class CalcTab(ft.Column):
     def __init__(self, page):
-        super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
+        super().__init__(expand=True, scroll="auto")
         self._pg = page
         self.expr = ""
         self.history = ft.ListView(spacing=4, height=120)
 
         self.display = ft.TextField(
             value="0", read_only=True, text_size=28,
-            text_align=ft.TextAlign.RIGHT,
+            text_align="right",
             bgcolor=ft.Colors.BLACK54, border_radius=8,
         )
 
@@ -185,7 +185,7 @@ class CalcTab(ft.Column):
             ], spacing=3))
 
         return ft.Column([
-            ft.Text("Scientific Calculator", size=22, weight=ft.FontWeight.BOLD),
+            ft.Text("Scientific Calculator", size=22, weight="bold"),
             self.display,
             ft.Column(rows, spacing=3),
             ft.Divider(height=12),
@@ -249,7 +249,7 @@ class CalcTab(ft.Column):
 # ── MAIN ──────────────────────────────────────────────────────────────────────
 def main(page: ft.Page):
     page.title = "Daily Tools Suite"
-    page.theme_mode = ft.ThemeMode.DARK
+    page.theme_mode = "dark"
     page.padding = 10
 
     audio_tab = AudioTab(page)
@@ -308,4 +308,4 @@ def main(page: ft.Page):
     ))
 
 
-ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=8080)
+ft.app(target=main, view="web_browser", port=8080)
