@@ -22,26 +22,26 @@ class AudioTab(ft.Column):
         super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
         self._pg = page
         self.tracks = []
-        self.status = ft.Text("Audio Studio: Ready", color=ft.colors.BLUE_200)
+        self.status = ft.Text("Audio Studio: Ready", color=ft.Colors.BLUE_200)
         self.file_list = ft.ListView(expand=True, spacing=5)
 
     def build(self):
         return ft.Column([
             ft.Text("Audio Editor", size=25, weight=ft.FontWeight.BOLD),
             ft.Row([
-                ft.ElevatedButton("Add Track", icon=ft.icons.ADD,
+                ft.ElevatedButton("Add Track", icon=ft.Icons.ADD,
                                   on_click=lambda _: self.picker.pick_files(allow_multiple=True)),
                 self.status,
             ]),
-            ft.Container(self.file_list, bgcolor=ft.colors.WHITE10,
+            ft.Container(self.file_list, bgcolor=ft.Colors.WHITE10,
                          border_radius=10, padding=10, height=150),
             ft.Text("Effects"),
             ft.Row([
                 ft.TextField(label="Fade In (ms)", value="1000", width=130),
                 ft.TextField(label="Fade Out (ms)", value="1000", width=130),
             ]),
-            ft.ElevatedButton("Join & Export", icon=ft.icons.SAVE,
-                              on_click=self.export_audio, bgcolor=ft.colors.BLUE_800),
+            ft.ElevatedButton("Join & Export", icon=ft.Icons.SAVE,
+                              on_click=self.export_audio, bgcolor=ft.Colors.BLUE_800),
         ])
 
     def export_audio(self, e):
@@ -68,18 +68,18 @@ class PhotoTab(ft.Column):
     def build(self):
         return ft.Column([
             ft.Text("Lumina Photo Editor", size=25, weight=ft.FontWeight.BOLD),
-            ft.Container(self.img_display, bgcolor=ft.colors.BLACK38, border_radius=10),
+            ft.Container(self.img_display, bgcolor=ft.Colors.BLACK38, border_radius=10),
             ft.Row([
-                ft.IconButton(ft.icons.BRIGHTNESS_6, tooltip="Brighten",
+                ft.IconButton(ft.Icons.BRIGHTNESS_6, tooltip="Brighten",
                               on_click=lambda _: self.apply("bright")),
-                ft.IconButton(ft.icons.COLOR_LENS, tooltip="Sepia",
+                ft.IconButton(ft.Icons.COLOR_LENS, tooltip="Sepia",
                               on_click=lambda _: self.apply("sepia")),
-                ft.IconButton(ft.icons.CONTRAST, tooltip="Contrast",
+                ft.IconButton(ft.Icons.CONTRAST, tooltip="Contrast",
                               on_click=lambda _: self.apply("contrast")),
-                ft.IconButton(ft.icons.ROTATE_RIGHT, tooltip="Rotate",
+                ft.IconButton(ft.Icons.ROTATE_RIGHT, tooltip="Rotate",
                               on_click=lambda _: self.apply("rotate")),
             ], alignment=ft.MainAxisAlignment.CENTER),
-            ft.ElevatedButton("Open Photo", icon=ft.icons.IMAGE,
+            ft.ElevatedButton("Open Photo", icon=ft.Icons.IMAGE,
                               on_click=lambda _: self.picker.pick_files(
                                   allowed_extensions=["jpg", "jpeg", "png", "bmp", "gif"])),
         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
@@ -117,13 +117,13 @@ class PdfTab(ft.Column):
     def build(self):
         return ft.Column([
             ft.Text("PDF Merger", size=25, weight=ft.FontWeight.BOLD),
-            ft.ElevatedButton("Select PDFs", icon=ft.icons.FILE_COPY,
+            ft.ElevatedButton("Select PDFs", icon=ft.Icons.FILE_COPY,
                               on_click=lambda _: self.picker.pick_files(
                                   allow_multiple=True, allowed_extensions=["pdf"])),
-            ft.Container(self.file_list, bgcolor=ft.colors.WHITE10,
+            ft.Container(self.file_list, bgcolor=ft.Colors.WHITE10,
                          border_radius=8, padding=8, height=130),
-            ft.ElevatedButton("Merge & Save", icon=ft.icons.MERGE_TYPE,
-                              on_click=self.merge, bgcolor=ft.colors.GREEN_700),
+            ft.ElevatedButton("Merge & Save", icon=ft.Icons.MERGE_TYPE,
+                              on_click=self.merge, bgcolor=ft.Colors.GREEN_700),
         ])
 
     def merge(self, e):
@@ -150,7 +150,7 @@ class CalcTab(ft.Column):
         self.display = ft.TextField(
             value="0", read_only=True, text_size=28,
             text_align=ft.TextAlign.RIGHT,
-            bgcolor=ft.colors.BLACK54, border_radius=8,
+            bgcolor=ft.Colors.BLACK54, border_radius=8,
         )
 
     # ── layout ────────────────────────────────────────────────────────────────
@@ -175,10 +175,10 @@ class CalcTab(ft.Column):
                     on_click=lambda e, b=b: self._btn(b),
                     style=ft.ButtonStyle(
                         bgcolor=(
-                            ft.colors.GREEN_700 if b == "=" else
-                            ft.colors.ORANGE_700 if b in ["÷", "×", "-", "+"] else
-                            ft.colors.RED_700 if b in ["C", "CE", "⌫"] else
-                            ft.colors.BLUE_GREY_700
+                            ft.Colors.GREEN_700 if b == "=" else
+                            ft.Colors.ORANGE_700 if b in ["÷", "×", "-", "+"] else
+                            ft.Colors.RED_700 if b in ["C", "CE", "⌫"] else
+                            ft.Colors.BLUE_GREY_700
                         )
                     ),
                 ) for b in row
@@ -189,8 +189,8 @@ class CalcTab(ft.Column):
             self.display,
             ft.Column(rows, spacing=3),
             ft.Divider(height=12),
-            ft.Text("History", size=14, color=ft.colors.GREY_400),
-            ft.Container(self.history, bgcolor=ft.colors.WHITE10,
+            ft.Text("History", size=14, color=ft.Colors.GREY_400),
+            ft.Container(self.history, bgcolor=ft.Colors.WHITE10,
                          border_radius=8, padding=8),
         ], spacing=6)
 
@@ -218,7 +218,7 @@ class CalcTab(ft.Column):
                     {"math": math},
                 )
                 ans = str(round(float(result), 10)).rstrip("0").rstrip(".")
-                self.history.controls.insert(0, ft.Text(f"{prev} = {ans}", size=12, color=ft.colors.GREY_300))
+                self.history.controls.insert(0, ft.Text(f"{prev} = {ans}", size=12, color=ft.Colors.GREY_300))
                 self.expr = ans
                 self.display.value = ans
             except Exception:
@@ -296,13 +296,13 @@ def main(page: ft.Page):
         animation_duration=250,
         expand=True,
         tabs=[
-            ft.Tab(text="Calculator", icon=ft.icons.CALCULATE,
+            ft.Tab(text="Calculator", icon=ft.Icons.CALCULATE,
                    content=ft.Container(calc_tab.build(), padding=10)),
-            ft.Tab(text="Photo",      icon=ft.icons.PHOTO,
+            ft.Tab(text="Photo",      icon=ft.Icons.PHOTO,
                    content=ft.Container(photo_tab.build(), padding=10)),
-            ft.Tab(text="Audio",      icon=ft.icons.AUDIOTRACK,
+            ft.Tab(text="Audio",      icon=ft.Icons.AUDIOTRACK,
                    content=ft.Container(audio_tab.build(), padding=10)),
-            ft.Tab(text="PDF",        icon=ft.icons.PICTURE_AS_PDF,
+            ft.Tab(text="PDF",        icon=ft.Icons.PICTURE_AS_PDF,
                    content=ft.Container(pdf_tab.build(), padding=10)),
         ],
     ))
