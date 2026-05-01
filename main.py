@@ -63,7 +63,7 @@ class PhotoTab(ft.Column):
         super().__init__(expand=True, scroll="auto")
         self._pg = page
         self.curr_img = None
-        self.img_display = ft.Image(width=300, height=300, fit="contain")
+        self.img_display = ft.Image(src="", width=300, height=300, fit="contain")
 
     def build(self):
         return ft.Column([
