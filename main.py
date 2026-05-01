@@ -169,7 +169,7 @@ class CalcTab(ft.Column):
         for row in btn_grid:
             rows.append(ft.Row([
                 ft.ElevatedButton(
-                    text=b,
+                    b,
                     expand=True,
                     height=48,
                     on_click=lambda e, b=b: self._btn(b),
