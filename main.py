@@ -283,9 +283,12 @@ def main(page: ft.Page):
                     pdf_tab.file_list.controls.append(ft.Text(f.name))
             page.update()
 
-    audio_tab.picker = ft.FilePicker(on_result=on_audio_result)
-    photo_tab.picker = ft.FilePicker(on_result=on_photo_result)
-    pdf_tab.picker   = ft.FilePicker(on_result=on_pdf_result)
+    audio_tab.picker = ft.FilePicker()
+    audio_tab.picker.on_result = on_audio_result
+    photo_tab.picker = ft.FilePicker()
+    photo_tab.picker.on_result = on_photo_result
+    pdf_tab.picker = ft.FilePicker()
+    pdf_tab.picker.on_result = on_pdf_result
 
     page.overlay.extend([
         audio_tab.picker, photo_tab.picker, pdf_tab.picker,
