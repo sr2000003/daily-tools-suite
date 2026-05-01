@@ -20,7 +20,7 @@ def read_file(file):
 class AudioTab(ft.Column):
     def __init__(self, page):
         super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
-        self.page = page
+        self._pg = page
         self.tracks = []
         self.status = ft.Text("Audio Studio: Ready", color=ft.colors.BLUE_200)
         self.file_list = ft.ListView(expand=True, spacing=5)
@@ -52,16 +52,16 @@ class AudioTab(ft.Column):
             combined = combined.append(t, crossfade=100)
         path = "Combined_Audio.mp3"
         combined.export(path, format="mp3")
-        self.page.snack_bar = ft.SnackBar(ft.Text(f"Exported: {path}"))
-        self.page.snack_bar.open = True
-        self.page.update()
+        self._pg.snack_bar = ft.SnackBar(ft.Text(f"Exported: {path}"))
+        self._pg.snack_bar.open = True
+        self._pg.update()
 
 
 # ── PHOTO TAB ─────────────────────────────────────────────────────────────────
 class PhotoTab(ft.Column):
     def __init__(self, page):
         super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
-        self.page = page
+        self._pg = page
         self.curr_img = None
         self.img_display = ft.Image(width=300, height=300, fit=ft.ImageFit.CONTAIN)
 
@@ -103,14 +103,14 @@ class PhotoTab(ft.Column):
         img = self.curr_img.convert("RGB")
         img.save(buf, format="PNG")
         self.img_display.src_base64 = base64.b64encode(buf.getvalue()).decode()
-        self.page.update()
+        self._pg.update()
 
 
 # ── PDF TAB ───────────────────────────────────────────────────────────────────
 class PdfTab(ft.Column):
     def __init__(self, page):
         super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
-        self.page = page
+        self._pg = page
         self.paths = []
         self.file_list = ft.ListView(spacing=4, height=120)
 
@@ -134,16 +134,16 @@ class PdfTab(ft.Column):
             m.append(p)
         out = "Merged.pdf"
         m.write(out)
-        self.page.snack_bar = ft.SnackBar(ft.Text(f"Saved: {out}"))
-        self.page.snack_bar.open = True
-        self.page.update()
+        self._pg.snack_bar = ft.SnackBar(ft.Text(f"Saved: {out}"))
+        self._pg.snack_bar.open = True
+        self._pg.update()
 
 
 # ── CALCULATOR TAB ────────────────────────────────────────────────────────────
 class CalcTab(ft.Column):
     def __init__(self, page):
         super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
-        self.page = page
+        self._pg = page
         self.expr = ""
         self.history = ft.ListView(spacing=4, height=120)
 
@@ -242,7 +242,7 @@ class CalcTab(ft.Column):
         else:
             self.expr += self._MAP.get(b, b)
             self.display.value = self.expr
-        self.page.update()
+        self._pg.update()
 
 
 
