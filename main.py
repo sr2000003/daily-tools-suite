@@ -2,7 +2,6 @@ import flet as ft
 from pydub import AudioSegment
 from PIL import Image, ImageOps, ImageEnhance
 from PyPDF2 import PdfMerger
-import anthropic
 import io
 import base64
 import os
@@ -146,23 +145,13 @@ class CalcTab(ft.Column):
         super().__init__(expand=True, scroll=ft.ScrollMode.AUTO)
         self.page = page
         self.expr = ""
-        self.image_b64 = None
-        self.image_mime = "image/jpeg"
+        self.history = ft.ListView(spacing=4, height=120)
 
         self.display = ft.TextField(
-            value="0", read_only=True, text_size=26,
+            value="0", read_only=True, text_size=28,
             text_align=ft.TextAlign.RIGHT,
             bgcolor=ft.colors.BLACK54, border_radius=8,
         )
-        self.ai_input = ft.TextField(
-            label="Type a math question (calculus, algebra, etc.) or upload an image…",
-            multiline=True, min_lines=2, max_lines=5, expand=True,
-        )
-        self.ai_result = ft.Text("", selectable=True, size=14)
-        self.img_preview = ft.Image(
-            width=220, height=160, fit=ft.ImageFit.CONTAIN, visible=False
-        )
-        self.solving_indicator = ft.ProgressRing(width=20, height=20, visible=False)
 
     # ── layout ────────────────────────────────────────────────────────────────
     def build(self):
@@ -199,40 +188,10 @@ class CalcTab(ft.Column):
             ft.Text("Scientific Calculator", size=22, weight=ft.FontWeight.BOLD),
             self.display,
             ft.Column(rows, spacing=3),
-
-            ft.Divider(height=20),
-            ft.Text("AI Math Solver", size=18, weight=ft.FontWeight.BOLD),
-            ft.Text("Solves calculus, algebra, geometry, statistics — type or upload a photo",
-                    size=12, color=ft.colors.GREY_400),
-
-            ft.Row([self.ai_input]),
-            self.img_preview,
-            ft.Row([
-                ft.ElevatedButton(
-                    "Upload / Camera Photo",
-                    icon=ft.icons.CAMERA_ALT,
-                    on_click=lambda _: self.img_picker.pick_files(
-                        allowed_extensions=["jpg", "jpeg", "png", "webp"]
-                    ),
-                ),
-                ft.IconButton(
-                    icon=ft.icons.CLOSE,
-                    tooltip="Remove image",
-                    on_click=self._clear_image,
-                ),
-                ft.ElevatedButton(
-                    "Solve with AI",
-                    icon=ft.icons.AUTO_AWESOME,
-                    on_click=self._ai_solve,
-                    bgcolor=ft.colors.PURPLE_700,
-                ),
-                self.solving_indicator,
-            ]),
-            ft.Container(
-                ft.Column([self.ai_result], scroll=ft.ScrollMode.AUTO),
-                bgcolor=ft.colors.WHITE10, border_radius=8,
-                padding=12, height=200,
-            ),
+            ft.Divider(height=12),
+            ft.Text("History", size=14, color=ft.colors.GREY_400),
+            ft.Container(self.history, bgcolor=ft.colors.WHITE10,
+                         border_radius=8, padding=8),
         ], spacing=6)
 
     # ── button logic ──────────────────────────────────────────────────────────
@@ -252,13 +211,16 @@ class CalcTab(ft.Column):
     def _btn(self, b):
         if b == "=":
             try:
+                prev = self.expr
                 result = eval(
                     self.expr,
                     {"__builtins__": {}},
                     {"math": math},
                 )
-                self.expr = str(result)
-                self.display.value = str(round(float(result), 10)).rstrip("0").rstrip(".")
+                ans = str(round(float(result), 10)).rstrip("0").rstrip(".")
+                self.history.controls.insert(0, ft.Text(f"{prev} = {ans}", size=12, color=ft.colors.GREY_300))
+                self.expr = ans
+                self.display.value = ans
             except Exception:
                 self.display.value = "Error"
                 self.expr = ""
@@ -282,71 +244,6 @@ class CalcTab(ft.Column):
             self.display.value = self.expr
         self.page.update()
 
-    # ── image helpers ─────────────────────────────────────────────────────────
-    def on_image_picked(self, e):
-        if not e.files:
-            return
-        data = read_file(e.files[0])
-        if data:
-            ext = e.files[0].name.rsplit(".", 1)[-1].lower()
-            self.image_mime = "image/png" if ext == "png" else "image/jpeg"
-            self.image_b64 = base64.b64encode(data).decode()
-            self.img_preview.src_base64 = self.image_b64
-            self.img_preview.visible = True
-            self.page.update()
-
-    def _clear_image(self, e):
-        self.image_b64 = None
-        self.img_preview.visible = False
-        self.page.update()
-
-    # ── AI solve ──────────────────────────────────────────────────────────────
-    def _ai_solve(self, e):
-        question = self.ai_input.value.strip()
-        if not question and not self.image_b64:
-            return
-
-        self.ai_result.value = ""
-        self.solving_indicator.visible = True
-        self.page.update()
-
-        try:
-            client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
-            content = []
-
-            if self.image_b64:
-                content.append({
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": self.image_mime,
-                        "data": self.image_b64,
-                    },
-                })
-
-            content.append({
-                "type": "text",
-                "text": question if question else
-                        "Solve the math problem in this image. Show full step-by-step working.",
-            })
-
-            msg = client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=2048,
-                system=(
-                    "You are an expert math tutor. Solve problems step by step. "
-                    "Cover calculus (derivatives, integrals, limits), algebra, "
-                    "geometry, trigonometry, statistics, and linear algebra. "
-                    "Format answers clearly with each step numbered."
-                ),
-                messages=[{"role": "user", "content": content}],
-            )
-            self.ai_result.value = msg.content[0].text
-        except Exception as ex:
-            self.ai_result.value = f"Error: {ex}"
-        finally:
-            self.solving_indicator.visible = False
-            self.page.update()
 
 
 # ── MAIN ──────────────────────────────────────────────────────────────────────
@@ -389,11 +286,9 @@ def main(page: ft.Page):
     audio_tab.picker = ft.FilePicker(on_result=on_audio_result)
     photo_tab.picker = ft.FilePicker(on_result=on_photo_result)
     pdf_tab.picker   = ft.FilePicker(on_result=on_pdf_result)
-    calc_tab.img_picker = ft.FilePicker(on_result=calc_tab.on_image_picked)
 
     page.overlay.extend([
-        audio_tab.picker, photo_tab.picker,
-        pdf_tab.picker,   calc_tab.img_picker,
+        audio_tab.picker, photo_tab.picker, pdf_tab.picker,
     ])
 
     page.add(ft.Tabs(
