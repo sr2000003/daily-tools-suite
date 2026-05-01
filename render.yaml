@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: daily-tools-suite
+    runtime: docker
+    plan: free
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false   # you will paste this manually in Render dashboard
+    healthCheckPath: /
