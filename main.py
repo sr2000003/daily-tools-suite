@@ -294,21 +294,31 @@ def main(page: ft.Page):
         audio_tab.picker, photo_tab.picker, pdf_tab.picker,
     ])
 
-    page.add(ft.Tabs(
+    panels = [
+        ft.Container(calc_tab.build(),  padding=10, expand=True, visible=True),
+        ft.Container(photo_tab.build(), padding=10, expand=True, visible=False),
+        ft.Container(audio_tab.build(), padding=10, expand=True, visible=False),
+        ft.Container(pdf_tab.build(),   padding=10, expand=True, visible=False),
+    ]
+
+    def on_tab_change(e):
+        for i, p in enumerate(panels):
+            p.visible = (i == e.control.selected_index)
+        page.update()
+
+    tabs = ft.Tabs(
         selected_index=0,
         animation_duration=250,
-        expand=True,
+        on_change=on_tab_change,
         tabs=[
-            ft.Tab("Calculator", icon=ft.Icons.CALCULATE,
-                   content=ft.Container(calc_tab.build(), padding=10)),
-            ft.Tab("Photo",      icon=ft.Icons.PHOTO,
-                   content=ft.Container(photo_tab.build(), padding=10)),
-            ft.Tab("Audio",      icon=ft.Icons.AUDIOTRACK,
-                   content=ft.Container(audio_tab.build(), padding=10)),
-            ft.Tab("PDF",        icon=ft.Icons.PICTURE_AS_PDF,
-                   content=ft.Container(pdf_tab.build(), padding=10)),
+            ft.Tab("Calculator", icon=ft.Icons.CALCULATE),
+            ft.Tab("Photo",      icon=ft.Icons.PHOTO),
+            ft.Tab("Audio",      icon=ft.Icons.AUDIOTRACK),
+            ft.Tab("PDF",        icon=ft.Icons.PICTURE_AS_PDF),
         ],
-    ))
+    )
+
+    page.add(tabs, ft.Column(panels, expand=True))
 
 
 ft.app(target=main, view="web_browser", port=8080)
