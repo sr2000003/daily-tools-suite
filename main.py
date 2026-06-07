@@ -325,24 +325,29 @@ def main(page: ft.Page):
         ft.Container(pdf_tab.build(),   padding=10, expand=True, visible=False),
     ]
 
-    def on_tab_change(e):
+    nav_labels = [
+        ("Calculator", ft.Icons.CALCULATE),
+        ("Photo",      ft.Icons.PHOTO),
+        ("Audio",      ft.Icons.AUDIOTRACK),
+        ("PDF",        ft.Icons.PICTURE_AS_PDF),
+    ]
+    nav_buttons = []
+
+    def select_tab(index):
         for i, p in enumerate(panels):
-            p.visible = (i == e.control.selected_index)
+            p.visible = (i == index)
+        for i, b in enumerate(nav_buttons):
+            b.bgcolor = ft.Colors.BLUE_800 if i == index else ft.Colors.BLUE_GREY_700
         page.update()
 
-    tabs = ft.Tabs(
-        selected_index=0,
-        animation_duration=250,
-        on_change=on_tab_change,
-        tabs=[
-            ft.Tab("Calculator", icon=ft.Icons.CALCULATE),
-            ft.Tab("Photo",      icon=ft.Icons.PHOTO),
-            ft.Tab("Audio",      icon=ft.Icons.AUDIOTRACK),
-            ft.Tab("PDF",        icon=ft.Icons.PICTURE_AS_PDF),
-        ],
-    )
+    for i, (label, icon) in enumerate(nav_labels):
+        nav_buttons.append(ft.ElevatedButton(
+            label, icon=icon,
+            bgcolor=ft.Colors.BLUE_800 if i == 0 else ft.Colors.BLUE_GREY_700,
+            on_click=lambda _, i=i: select_tab(i),
+        ))
 
-    page.add(tabs, ft.Column(panels, expand=True))
+    page.add(ft.Row(nav_buttons), ft.Column(panels, expand=True))
 
 
 ft.app(target=main, view="web_browser", host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
