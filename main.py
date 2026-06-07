@@ -10,6 +10,8 @@ import math
 
 def read_file(file):
     """Read file in both desktop (path) and web (bytes) mode."""
+    if file.bytes:
+        return file.bytes
     if file.path and os.path.exists(file.path):
         with open(file.path, "rb") as f:
             return f.read()
@@ -32,7 +34,7 @@ class AudioTab(ft.Column):
             ft.Text("Audio Editor", size=25, weight="bold"),
             ft.Row([
                 ft.ElevatedButton("Add Track", icon=ft.Icons.ADD,
-                                  on_click=lambda _: self.picker.pick_files(allow_multiple=True)),
+                                  on_click=self.on_pick),
                 self.status,
             ]),
             ft.Container(self.file_list, bgcolor=ft.Colors.WHITE10,
@@ -74,7 +76,7 @@ class PhotoTab(ft.Column):
         super().__init__(expand=True, scroll="auto")
         self._pg = page
         self.curr_img = None
-        self.img_display = ft.Image(src="", width=300, height=300, fit="contain")
+        self.img_display = ft.Image(width=300, height=300, fit="contain", visible=False)
 
     def build(self):
         return ft.Column([
@@ -92,8 +94,7 @@ class PhotoTab(ft.Column):
             ], alignment="center"),
             ft.Row([
                 ft.ElevatedButton("Open Photo", icon=ft.Icons.IMAGE,
-                                  on_click=lambda _: self.picker.pick_files(
-                                      allowed_extensions=["jpg", "jpeg", "png", "bmp", "gif"])),
+                                  on_click=self.on_pick),
                 ft.ElevatedButton("Save", icon=ft.Icons.SAVE,
                                   on_click=self.save, bgcolor=ft.Colors.GREEN_700),
             ], alignment="center"),
@@ -127,6 +128,7 @@ class PhotoTab(ft.Column):
         img = self.curr_img.convert("RGB")
         img.save(buf, format="PNG")
         self.img_display.src_base64 = base64.b64encode(buf.getvalue()).decode()
+        self.img_display.visible = True
         self._pg.update()
 
 
@@ -142,8 +144,7 @@ class PdfTab(ft.Column):
         return ft.Column([
             ft.Text("PDF Merger", size=25, weight="bold"),
             ft.ElevatedButton("Select PDFs", icon=ft.Icons.FILE_COPY,
-                              on_click=lambda _: self.picker.pick_files(
-                                  allow_multiple=True, allowed_extensions=["pdf"])),
+                              on_click=self.on_pick),
             ft.Container(self.file_list, bgcolor=ft.Colors.WHITE10,
                          border_radius=8, padding=8, height=130),
             ft.ElevatedButton("Merge & Save", icon=ft.Icons.MERGE_TYPE,
@@ -281,42 +282,44 @@ def main(page: ft.Page):
     pdf_tab   = PdfTab(page)
     calc_tab  = CalcTab(page)
 
-    # File pickers
-    def on_audio_result(e):
-        if e.files:
-            for f in e.files:
-                data = read_file(f)
-                if data:
-                    audio_tab.tracks.append(AudioSegment.from_file(io.BytesIO(data)))
-                    audio_tab.file_list.controls.append(ft.Text(f.name))
-            audio_tab.status.value = f"{len(audio_tab.tracks)} track(s) loaded"
-            page.update()
+    # File pickers (Flet 0.84: pick_files is async and returns files directly)
+    async def pick_audio(_):
+        files = await audio_tab.picker.pick_files(allow_multiple=True, with_data=True)
+        for f in files or []:
+            data = read_file(f)
+            if data:
+                audio_tab.tracks.append(AudioSegment.from_file(io.BytesIO(data)))
+                audio_tab.file_list.controls.append(ft.Text(f.name))
+        audio_tab.status.value = f"{len(audio_tab.tracks)} track(s) loaded"
+        page.update()
 
-    def on_photo_result(e):
-        if e.files:
-            data = read_file(e.files[0])
+    async def pick_photo(_):
+        files = await photo_tab.picker.pick_files(
+            allow_multiple=False, with_data=True,
+            allowed_extensions=["jpg", "jpeg", "png", "bmp", "gif"])
+        if files:
+            data = read_file(files[0])
             if data:
                 photo_tab.curr_img = Image.open(io.BytesIO(data))
                 photo_tab._refresh()
 
-    def on_pdf_result(e):
-        if e.files:
-            for f in e.files:
-                if f.path:
-                    pdf_tab.paths.append(f.path)
-                    pdf_tab.file_list.controls.append(ft.Text(f.name))
-            page.update()
+    async def pick_pdf(_):
+        files = await pdf_tab.picker.pick_files(
+            allow_multiple=True, with_data=True, allowed_extensions=["pdf"])
+        for f in files or []:
+            data = read_file(f)
+            if data:
+                pdf_tab.paths.append(io.BytesIO(data))
+                pdf_tab.file_list.controls.append(ft.Text(f.name))
+        page.update()
 
     audio_tab.picker = ft.FilePicker()
-    audio_tab.picker.on_result = on_audio_result
+    audio_tab.on_pick = pick_audio
     photo_tab.picker = ft.FilePicker()
-    photo_tab.picker.on_result = on_photo_result
+    photo_tab.on_pick = pick_photo
     pdf_tab.picker = ft.FilePicker()
-    pdf_tab.picker.on_result = on_pdf_result
-
-    page.overlay.extend([
-        audio_tab.picker, photo_tab.picker, pdf_tab.picker,
-    ])
+    pdf_tab.on_pick = pick_pdf
+    page.services.extend([audio_tab.picker, photo_tab.picker, pdf_tab.picker])
 
     panels = [
         ft.Container(calc_tab.build(),  padding=10, expand=True, visible=True),
