@@ -24,6 +24,8 @@ class AudioTab(ft.Column):
         self.tracks = []
         self.status = ft.Text("Audio Studio: Ready", color=ft.Colors.BLUE_200)
         self.file_list = ft.ListView(expand=True, spacing=5)
+        self.fade_in = ft.TextField(label="Fade In (ms)", value="1000", width=130)
+        self.fade_out = ft.TextField(label="Fade Out (ms)", value="1000", width=130)
 
     def build(self):
         return ft.Column([
@@ -36,10 +38,7 @@ class AudioTab(ft.Column):
             ft.Container(self.file_list, bgcolor=ft.Colors.WHITE10,
                          border_radius=10, padding=10, height=150),
             ft.Text("Effects"),
-            ft.Row([
-                ft.TextField(label="Fade In (ms)", value="1000", width=130),
-                ft.TextField(label="Fade Out (ms)", value="1000", width=130),
-            ]),
+            ft.Row([self.fade_in, self.fade_out]),
             ft.ElevatedButton("Join & Export", icon=ft.Icons.SAVE,
                               on_click=self.export_audio, bgcolor=ft.Colors.BLUE_800),
         ])
@@ -50,6 +49,18 @@ class AudioTab(ft.Column):
         combined = self.tracks[0]
         for t in self.tracks[1:]:
             combined = combined.append(t, crossfade=100)
+        try:
+            fade_in_ms = int(self.fade_in.value)
+        except (TypeError, ValueError):
+            fade_in_ms = 0
+        try:
+            fade_out_ms = int(self.fade_out.value)
+        except (TypeError, ValueError):
+            fade_out_ms = 0
+        if fade_in_ms > 0:
+            combined = combined.fade_in(fade_in_ms)
+        if fade_out_ms > 0:
+            combined = combined.fade_out(fade_out_ms)
         path = "Combined_Audio.mp3"
         combined.export(path, format="mp3")
         self._pg.snack_bar = ft.SnackBar(ft.Text(f"Exported: {path}"))
@@ -79,10 +90,23 @@ class PhotoTab(ft.Column):
                 ft.IconButton(ft.Icons.ROTATE_RIGHT, tooltip="Rotate",
                               on_click=lambda _: self.apply("rotate")),
             ], alignment="center"),
-            ft.ElevatedButton("Open Photo", icon=ft.Icons.IMAGE,
-                              on_click=lambda _: self.picker.pick_files(
-                                  allowed_extensions=["jpg", "jpeg", "png", "bmp", "gif"])),
+            ft.Row([
+                ft.ElevatedButton("Open Photo", icon=ft.Icons.IMAGE,
+                                  on_click=lambda _: self.picker.pick_files(
+                                      allowed_extensions=["jpg", "jpeg", "png", "bmp", "gif"])),
+                ft.ElevatedButton("Save", icon=ft.Icons.SAVE,
+                                  on_click=self.save, bgcolor=ft.Colors.GREEN_700),
+            ], alignment="center"),
         ], horizontal_alignment="center")
+
+    def save(self, e):
+        if not self.curr_img:
+            return
+        path = "Edited_Photo.png"
+        self.curr_img.convert("RGB").save(path, format="PNG")
+        self._pg.snack_bar = ft.SnackBar(ft.Text(f"Saved: {path}"))
+        self._pg.snack_bar.open = True
+        self._pg.update()
 
     def apply(self, mode):
         if not self.curr_img:
@@ -321,4 +345,4 @@ def main(page: ft.Page):
     page.add(tabs, ft.Column(panels, expand=True))
 
 
-ft.app(target=main, view="web_browser", port=8080)
+ft.app(target=main, view="web_browser", host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
